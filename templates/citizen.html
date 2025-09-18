@@ -126,6 +126,10 @@
             color: #6b7280;
         }
 
+        .required {
+            color: #e53e3e;
+        }
+
         .optional {
             color: #6b7280;
             font-style: italic;
@@ -344,20 +348,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="address">Location Information <span class="optional">(if no geotag in image)</span></label>
-                        <input type="text" id="address" name="address" class="input-field" placeholder="Enter address or location details">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="issue-type">Issue Type <span class="optional">(optional)</span></label>
-                        <select id="issue-type" name="issue-type" class="input-field">
-                            <option value="">Select an issue type</option>
-                            <option value="pothole">Pothole</option>
-                            <option value="graffiti">Graffiti</option>
-                            <option value="streetlight">Street Light Issue</option>
-                            <option value="garbage">Garbage Collection</option>
-                            <option value="other">Other</option>
-                        </select>
+                        <label for="address">Location Information <span class="required">*</span></label>
+                        <input type="text" id="address" name="address" class="input-field" placeholder="Enter address or location details" required>
                     </div>
 
                     <div class="form-group">
@@ -431,25 +423,25 @@
         // Form submission with confirmation
         document.getElementById('submitBtn').addEventListener('click', function() {
             const fileInput = document.getElementById('image');
+            const addressInput = document.getElementById('address');
+
             if (!fileInput.value) {
                 alert('Please select an image to upload.');
                 fileInput.focus();
                 return;
             }
 
+            if (!addressInput.value.trim()) {
+                alert('Please provide location information.');
+                addressInput.focus();
+                return;
+            }
+
             // Show the confirmation modal
             document.getElementById('confirmationModal').style.display = 'flex';
 
-            // Optional: show department based on issue-type (frontend display only)
-            const issueType = document.getElementById('issue-type').value;
-            let department = "Public Works"; // default
-            if (issueType === 'pothole') department = "Public Works";
-            else if (issueType === 'graffiti') department = "Community Services";
-            else if (issueType === 'streetlight') department = "Public Utilities";
-            else if (issueType === 'garbage') department = "Sanitation";
-            else if (issueType === 'other') department = "General Services";
-
-            document.getElementById('departmentClassification').textContent = department;
+            // Since issue type is removed, we'll use a default department
+            document.getElementById('departmentClassification').textContent = "Public Works";
         });
 
         // Confirm submission → submit form to backend

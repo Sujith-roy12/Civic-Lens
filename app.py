@@ -1,20 +1,17 @@
 from flask import Flask, render_template, request
 import os, datetime, sqlite3
 from PIL import Image
-from PIL.ExifTags import TAGS, GPSTAGS
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.mime.image import MIMEImage
 from transformers import CLIPProcessor, CLIPModel
 import torch
-from geopy.geocoders import Nominatim
 import uuid
 import re
 
-# IMPORTANT: You must install pytesseract and the Tesseract executable
-# pip install pytesseract
-# You also need to install the Tesseract OCR engine separately on your system
+# IMPORTANT: Ensure Tesseract OCR is installed on your system and its path is configured.
+# You can check by running 'tesseract --version' in your terminal.
 import pytesseract
 
 app = Flask(__name__)
@@ -31,41 +28,20 @@ def init_db():
     cursor.execute('''
                    CREATE TABLE IF NOT EXISTS departments
                    (
-                       id
-                       INTEGER
-                       PRIMARY
-                       KEY
-                       AUTOINCREMENT,
-                       name
-                       TEXT
-                       NOT
-                       NULL,
-                       email
-                       TEXT
-                       NOT
-                       NULL
+                       id INTEGER PRIMARY KEY AUTOINCREMENT,
+                       name TEXT NOT NULL,
+                       email TEXT NOT NULL
                    )
                    ''')
     cursor.execute('''
                    CREATE TABLE IF NOT EXISTS issues
                    (
-                       id
-                       INTEGER
-                       PRIMARY
-                       KEY
-                       AUTOINCREMENT,
-                       image
-                       TEXT
-                       NOT
-                       NULL,
-                       address
-                       TEXT,
-                       assigned_dept
-                       TEXT,
-                       status
-                       TEXT,
-                       last_update
-                       TEXT
+                       id INTEGER PRIMARY KEY AUTOINCREMENT,
+                       image TEXT NOT NULL,
+                       address TEXT,
+                       assigned_dept TEXT,
+                       status TEXT,
+                       last_update TEXT
                    )
                    ''')
     conn.commit()
@@ -102,68 +78,23 @@ DEPT_PROMPT_MAP = {
 }
 
 
-# --- GPS helpers ---
-def get_exif_data(image_path):
-    """Extract EXIF data and return GPS info dict if available."""
-    image = Image.open(image_path)
-    exif_data = image._getexif() or {}
-    gps_info = {}
-    for tag, value in exif_data.items():
-        decoded = TAGS.get(tag, tag)
-        if decoded == "GPSInfo":
-            for t in value:
-                sub_decoded = GPSTAGS.get(t, t)
-                gps_info[sub_decoded] = value[t]
-    return gps_info
-
-
-def get_lat_lon(gps_info):
-    """Convert GPS EXIF to latitude and longitude."""
-
-    def convert_to_degrees(value):
-        d, m, s = value
-        return d[0] / d[1] + (m[0] / m[1]) / 60.0 + (s[0] / s[1]) / 3600.0
-
-    lat = lon = None
-    if 'GPSLatitude' in gps_info and 'GPSLatitudeRef' in gps_info:
-        lat = convert_to_degrees(gps_info['GPSLatitude'])
-        if gps_info['GPSLatitudeRef'] != "N":
-            lat = -lat
-    if 'GPSLongitude' in gps_info and 'GPSLongitudeRef' in gps_info:
-        lon = convert_to_degrees(gps_info['GPSLongitude'])
-        if gps_info['GPSLongitudeRef'] != "E":
-            lon = -lon
-    return lat, lon
-
-
-def get_address_from_gps(lat, lon):
-    geolocator = Nominatim(user_agent="civic_app")
-    try:
-        location = geolocator.reverse((lat, lon), timeout=10)
-        return location.address if location else None
-    except Exception as e:
-        print("⚠️ Reverse geocoding failed:", e)
-        return None
-
-
-# --- UPDATED FUNCTION WITH OCR LOGIC ---
+# --- UPDATED FUNCTION WITH MORE ROBUST OCR LOGIC ---
 def extract_address_from_text(image_path):
     """
     Attempts to extract an address from text present on the image using OCR.
     """
     try:
-        # Open the image with PIL
         img = Image.open(image_path)
-        # Use pytesseract to extract all text from the image
         text = pytesseract.image_to_string(img)
         print("Extracted text from image:", text)  # For debugging purposes
 
-        # Use a regular expression to find a pattern that looks like an address
-        # This is a basic pattern and may need to be adjusted
-        match = re.search(r'([\w\s]+(?: Nagar)?(?:,[\w\s]+){2,4}, (?:India|Bharat))', text, re.IGNORECASE)
+        # Use a more flexible regex to find a potential address pattern
+        match = re.search(r'([\w\s]+\d*),? ([\w\s]+),? ([\w\s]+),? (India)', text, re.IGNORECASE)
         if match:
-            # Return the first full match
-            return match.group(0).strip()
+            address = match.group(0).strip()
+            # Simple check to ensure it's not just a random word
+            if len(address.split()) > 3:
+                return address
 
     except pytesseract.TesseractNotFoundError:
         print("Tesseract not installed or not in PATH. Skipping OCR.")
@@ -260,26 +191,17 @@ def citizen():
         if not file:
             return "No file uploaded"
 
+        # Validate that address is provided
+        if not manual_address:
+            return "Address is required"
+
         unique_filename = str(uuid.uuid4()) + "_" + file.filename
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         file.save(filepath)
 
-        final_address = None
-        # 1. Try to get address from EXIF GPS data
-        gps = get_exif_data(filepath)
-        if gps:
-            lat, lon = get_lat_lon(gps)
-            if lat and lon:
-                final_address = get_address_from_gps(lat, lon)
-
-        # 2. If EXIF fails, try to extract from text on the image using OCR
-        if not final_address:
-            final_address = extract_address_from_text(filepath)
-
-        # 3. If both automated methods fail, use the manual address
-        if not final_address:
-            final_address = manual_address
+        # Use the manually provided address (no longer using geotagging)
+        final_address = manual_address
 
         best_dept = assign_department_hf_generic(filepath)
 
