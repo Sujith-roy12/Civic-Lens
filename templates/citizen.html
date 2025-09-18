@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Citizen Portal - Civic Lens</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+            width: 100%;
+            max-width: 700px;
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2a5c5c 0%, #1e3a3a 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            position: relative;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-container {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #2a5c5c;
+            box-shadow: 0 0 0 3px rgba(42, 92, 92, 0.1);
+        }
+
+        .file-input-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            width: 100%;
+            transition: background-color 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #d1d5db;
+        }
+
+        .file-name {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .optional {
+            color: #6b7280;
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #2a5c5c, #1e3a3a);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(42, 92, 92, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(42, 92, 92, 0.3);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        .info-box {
+            background: #edf2f7;
+            border-left: 4px solid #2a5c5c;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 0.9rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        /* Image Preview Styles */
+        .image-preview-container {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            border: 1px solid #e5e7eb;
+        }
+
+        /* Confirmation Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .modal-icon {
+            font-size: 3rem;
+            color: #2a5c5c;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+
+        .modal-message {
+            margin-bottom: 25px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .department-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(90deg, #38b2ac, #2a5c5c);
+            color: white;
+            border-radius: 50px;
+            font-weight: 600;
+            margin: 15px 0;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(90deg, #2a5c5c, #1e3a3a);
+            color: white;
+            border: none;
+        }
+
+        .modal-btn.cancel {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 20px;
+            }
+
+            .form-container {
+                padding: 20px;
+            }
+
+            .modal-content {
+                padding: 20px;
+            }
+
+            .modal-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h2>CIVIC LENS</h2>
+            <p class="subtitle">Submit an issue to your local government</p>
+        </header>
+
+        <div class="content">
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i> Your reports help us improve our community. Please provide accurate information.
+            </div>
+
+            <div class="form-container">
+                <!-- 🔹 Form now submits to backend -->
+                <form id="issueForm" method="POST" action="{{ url_for('citizen') }}" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="image">Upload Image of Issue <span class="required">*</span></label>
+                        <div class="file-input-container">
+                            <label class="file-input-label">
+                                <i class="fas fa-upload"></i> Choose Image File
+                                <input type="file" id="image" name="image" class="file-input" accept="image/*" required>
+                            </label>
+                        </div>
+                        <div class="file-name" id="file-name">No file chosen</div>
+
+                        <!-- Image Preview -->
+                        <div class="image-preview-container" id="imagePreviewContainer">
+                            <img id="imagePreview" class="image-preview" src="" alt="Image Preview">
+                            <button type="button" id="removeImageBtn" class="btn" style="background: #e53e3e; max-width: 200px; margin: 0 auto;">
+                                <i class="fas fa-trash"></i> Remove Image
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Location Information <span class="optional">(if no geotag in image)</span></label>
+                        <input type="text" id="address" name="address" class="input-field" placeholder="Enter address or location details">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="issue-type">Issue Type <span class="optional">(optional)</span></label>
+                        <select id="issue-type" name="issue-type" class="input-field">
+                            <option value="">Select an issue type</option>
+                            <option value="pothole">Pothole</option>
+                            <option value="graffiti">Graffiti</option>
+                            <option value="streetlight">Street Light Issue</option>
+                            <option value="garbage">Garbage Collection</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Description <span class="optional">(optional)</span></label>
+                        <textarea id="description" name="description" class="input-field" rows="3" placeholder="Please provide additional details about the issue"></textarea>
+                    </div>
+
+                    <button type="button" id="submitBtn" class="btn">
+                        <i class="fas fa-paper-plane"></i> Submit Issue
+                    </button>
+                </form>
+            </div>
+
+            <a href="{{ url_for('home') }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Home
+            </a>
+        </div>
+
+        <footer>
+            <p>Civic Lens &copy; 2023. Building stronger communities together.</p>
+        </footer>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmationModal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="modal-title">Confirm Submission</h3>
+            <p class="modal-message">Are you sure you want to submit this issue to the following department?</p>
+
+            <div class="department-badge" id="departmentClassification">
+               One step closer to confirm your issue
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn confirm" id="confirmSubmit">Yes, Submit</button>
+                <button class="modal-btn cancel" id="cancelSubmit">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show selected file name and preview
+        document.getElementById('image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('file-name').textContent = file.name;
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = event.target.result;
+                    document.getElementById('imagePreviewContainer').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('file-name').textContent = 'No file chosen';
+                document.getElementById('imagePreviewContainer').style.display = 'none';
+            }
+        });
+
+        // Remove image functionality
+        document.getElementById('removeImageBtn').addEventListener('click', function() {
+            document.getElementById('image').value = '';
+            document.getElementById('file-name').textContent = 'No file chosen';
+            document.getElementById('imagePreviewContainer').style.display = 'none';
+        });
+
+        // Form submission with confirmation
+        document.getElementById('submitBtn').addEventListener('click', function() {
+            const fileInput = document.getElementById('image');
+            if (!fileInput.value) {
+                alert('Please select an image to upload.');
+                fileInput.focus();
+                return;
+            }
+
+            // Show the confirmation modal
+            document.getElementById('confirmationModal').style.display = 'flex';
+
+            // Optional: show department based on issue-type (frontend display only)
+            const issueType = document.getElementById('issue-type').value;
+            let department = "Public Works"; // default
+            if (issueType === 'pothole') department = "Public Works";
+            else if (issueType === 'graffiti') department = "Community Services";
+            else if (issueType === 'streetlight') department = "Public Utilities";
+            else if (issueType === 'garbage') department = "Sanitation";
+            else if (issueType === 'other') department = "General Services";
+
+            document.getElementById('departmentClassification').textContent = department;
+        });
+
+        // Confirm submission → submit form to backend
+        document.getElementById('confirmSubmit').addEventListener('click', function() {
+            document.getElementById('issueForm').submit();
+        });
+
+        // Cancel submission → hide modal
+        document.getElementById('cancelSubmit').addEventListener('click', function() {
+            document.getElementById('confirmationModal').style.display = 'none';
+        });
+
+        // Close modal if clicked outside
+        document.getElementById('confirmationModal').addEventListener('click', function(e) {
+            if (e.target === this) this.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

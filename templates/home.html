@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civic Lens - Select Your Role</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2a5c5c 0%, #1e3a3a 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 12px;
+            font-weight: 800;
+            position: relative;
+            letter-spacing: 0.5px;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 500px;
+            margin: 0 auto;
+            font-weight: 300;
+            position: relative;
+        }
+
+        .content {
+            padding: 50px 40px;
+        }
+
+        .role-selection {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .role-selection p {
+            font-size: 1.3rem;
+            color: #4b5563;
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+
+        .cards {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            width: 280px;
+            padding: 35px 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #2a5c5c, #1e3a3a);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .card.citizen:hover {
+            border-color: #38b2ac;
+        }
+
+        .card.department:hover {
+            border-color: #2a5c5c;
+        }
+
+        .icon {
+            font-size: 3.2rem;
+            margin-bottom: 24px;
+            display: inline-block;
+            height: 90px;
+            width: 90px;
+            line-height: 90px;
+            border-radius: 50%;
+            text-align: center;
+            color: white;
+        }
+
+        .citizen .icon {
+            background: linear-gradient(135deg, #38b2ac, #2a5c5c);
+            box-shadow: 0 8px 20px rgba(56, 178, 172, 0.3);
+        }
+
+        .department .icon {
+            background: linear-gradient(135deg, #2a5c5c, #1e3a3a);
+            box-shadow: 0 8px 20px rgba(42, 92, 92, 0.3);
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            margin-bottom: 16px;
+            color: #1f2937;
+        }
+
+        .card p {
+            color: #6b7280;
+            margin-bottom: 28px;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background: linear-gradient(90deg, #2a5c5c, #1e3a3a);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(42, 92, 92, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transform: translateX(-100%);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(42, 92, 92, 0.3);
+        }
+
+        .btn:hover::before {
+            animation: shine 1.5s infinite;
+        }
+
+        .citizen .btn {
+            background: linear-gradient(90deg, #38b2ac, #2a5c5c);
+        }
+
+        .department .btn {
+            background: linear-gradient(90deg, #2a5c5c, #1e3a3a);
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #6b7280;
+            font-size: 0.95rem;
+            border-top: 1px solid #f3f4f6;
+            background: #f9fafb;
+        }
+
+        @keyframes shine {
+            to {
+                transform: translateX(100%);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .cards {
+                flex-direction: column;
+                align-items: center;
+                gap: 30px;
+            }
+
+            h1 {
+                font-size: 2.3rem;
+            }
+
+            .content {
+                padding: 40px 25px;
+            }
+
+            .role-selection p {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CIVIC LENS</h1>
+            <p class="tagline">Connecting citizens and city departments for a better community</p>
+        </header>
+
+        <div class="content">
+            <div class="role-selection">
+                <p>Select your role to continue:</p>
+
+                <div class="cards">
+                    <div class="card citizen">
+                        <div class="icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h2>Citizen</h2>
+                        <p>Access services, report issues, and engage with your local government</p>
+                        <a href="{{ url_for('citizen') }}" class="btn">Enter as Citizen</a>
+                    </div>
+
+                    <div class="card department">
+                        <div class="icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        <h2>Department</h2>
+                        <p>Manage requests, update status, and serve your community</p>
+                        <a href="{{ url_for('departments') }}" class="btn">Department Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Civic Lens &copy; 2023. Building stronger communities together.</p>
+        </footer>
+    </div>
+</body>
+</html>
