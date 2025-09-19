@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Progress Tracker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --color-primary: #008080;
+            --color-light: #4DB6AC;
+            --color-bg: #F0F4F8;
+            --color-card-bg: #FFFFFF;
+            --color-text-dark: #333333;
+            --color-text-light: #6B7787;
+            --color-border: #E2E8F0;
+            --color-yellow: #FFC107;
+            --color-blue: #2196F3;
+            --color-green: #4CAF50;
+            --shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text-dark);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background-color: var(--color-card-bg);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+        }
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        h1 {
+            color: var(--color-primary);
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        .issue-card {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+        }
+        .issue-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        .detail-item {
+            font-size: 0.9rem;
+        }
+        .detail-item strong {
+            display: block;
+            font-size: 1.1rem;
+            color: var(--color-text-dark);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .status-badge.Pending { background-color: var(--color-yellow); }
+        .status-badge.In-Progress { background-color: var(--color-blue); }
+        .status-badge.Resolved { background-color: var(--color-green); }
+
+        .progress-section {
+            margin-top: 2rem;
+        }
+        h2 {
+            font-size: 1.5rem;
+            color: var(--color-primary);
+            margin-bottom: 1rem;
+        }
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background-color: var(--color-border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--color-primary), var(--color-light));
+            border-radius: 6px;
+            transition: width 0.5s ease-in-out;
+        }
+        .progress-bar-label {
+            margin-top: 0.5rem;
+            text-align: right;
+            font-size: 0.9rem;
+            color: var(--color-text-light);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 2rem;
+        }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 10px;
+            height: 100%;
+            width: 2px;
+            background-color: var(--color-border);
+        }
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+        .timeline-icon {
+            position: absolute;
+            left: -20px;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background-color: var(--color-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .timeline-content {
+            padding: 1rem;
+            background-color: var(--color-bg);
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .timeline-date {
+            font-size: 0.8rem;
+            color: var(--color-text-light);
+            margin-bottom: 0.5rem;
+        }
+        .timeline-title {
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 0.5rem;
+        }
+        .timeline-description {
+            font-size: 0.9rem;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 2rem;
+            padding: 10px 20px;
+            background-color: var(--color-primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: background-color 0.3s;
+        }
+        .back-btn:hover {
+            background-color: var(--color-light);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Issue Progress Tracker</h1>
+        </header>
+
+        {% if issue %}
+        <div class="issue-card">
+            <div class="issue-details">
+                <div class="detail-item">
+                    <span>Issue ID</span>
+                    <strong>#{{ issue[0] }}</strong>
+                </div>
+                <div class="detail-item">
+                    <span>Assigned Department</span>
+                    <strong>{{ issue[4] }}</strong>
+                </div>
+                <div class="detail-item">
+                    <span>Status</span>
+                    <strong class="status-badge {{ issue[5] }}">{{ issue[5] }}</strong>
+                </div>
+            </div>
+            <div class="detail-item">
+                <span>Address</span>
+                <strong>{{ issue[2] }}</strong>
+            </div>
+
+            {% if issue[6] and issue[7] %}
+            <div class="progress-section">
+                <h2>Progress</h2>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: {{ ((progress_updates | length if progress_updates else 0) / issue[6] * 100) if issue[6] > 0 else 0 }}%"></div>
+                </div>
+                <div class="progress-bar-label">
+                    {{ progress_updates|length if progress_updates else 0 }} of {{ issue[6] }} days complete
+                </div>
+            </div>
+
+            <div class="timeline-section">
+                <h2>Updates Timeline</h2>
+                <div class="timeline">
+                    {% for update in progress_updates %}
+                    <div class="timeline-item">
+                        <div class="timeline-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">{{ update[2] }}</div>
+                            <div class="timeline-title">Day {{ update[1] }} Update</div>
+                            <div class="timeline-description">
+                                {{ update[3] if update[3] else 'No description provided.' }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+            <p style="text-align: center;">Issue not found. Please check the ID and try again.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

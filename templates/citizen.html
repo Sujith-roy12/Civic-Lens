@@ -28,16 +28,78 @@
             border-radius: 16px;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
             width: 100%;
-            max-width: 700px;
+            max-width: 1000px;
             overflow: hidden;
+            display: flex;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #2a5c5c 0%, #1e3a3a 100%);
+            color: white;
+            padding: 25px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 0 25px 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .nav-item {
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-left: 4px solid #38b2ac;
+        }
+
+        .nav-item i {
+            margin-right: 12px;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .nav-text {
+            font-weight: 500;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
-            background: linear-gradient(135deg, #2a5c5c 0%, #1e3a3a 100%);
-            color: white;
-            padding: 25px 30px;
-            text-align: center;
-            position: relative;
+            background: white;
+            color: #2a5c5c;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         h2 {
@@ -48,12 +110,14 @@
 
         .subtitle {
             font-size: 1rem;
-            opacity: 0.9;
-            font-weight: 300;
+            color: #6b7280;
+            font-weight: 400;
         }
 
         .content {
             padding: 30px;
+            flex: 1;
+            overflow-y: auto;
         }
 
         .form-container {
@@ -294,6 +358,48 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
+        /* Track Progress Section (Hidden by Default) */
+        .track-section {
+            display: none;
+        }
+
+        .track-form {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 15px;
+            }
+
+            .nav-items {
+                display: flex;
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+
+            .nav-item {
+                padding: 10px 15px;
+                white-space: nowrap;
+                border-left: none;
+                border-bottom: 3px solid transparent;
+            }
+
+            .nav-item.active {
+                border-left: none;
+                border-bottom: 3px solid #38b2ac;
+            }
+        }
+
         @media (max-width: 600px) {
             .content {
                 padding: 20px;
@@ -315,62 +421,121 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h2>CIVIC LENS</h2>
-            <p class="subtitle">Submit an issue to your local government</p>
-        </header>
-
-        <div class="content">
-            <div class="info-box">
-                <i class="fas fa-info-circle"></i> Your reports help us improve our community. Please provide accurate information.
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">CIVIC LENS</div>
+                <div class="sidebar-subtitle">Citizen Portal</div>
             </div>
 
-            <div class="form-container">
-                <!-- 🔹 Form now submits to backend -->
-                <form id="issueForm" method="POST" action="{{ url_for('citizen') }}" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="image">Upload Image of Issue <span class="required">*</span></label>
-                        <div class="file-input-container">
-                            <label class="file-input-label">
-                                <i class="fas fa-upload"></i> Choose Image File
-                                <input type="file" id="image" name="image" class="file-input" accept="image/*" required>
-                            </label>
-                        </div>
-                        <div class="file-name" id="file-name">No file chosen</div>
-
-                        <!-- Image Preview -->
-                        <div class="image-preview-container" id="imagePreviewContainer">
-                            <img id="imagePreview" class="image-preview" src="" alt="Image Preview">
-                            <button type="button" id="removeImageBtn" class="btn" style="background: #e53e3e; max-width: 200px; margin: 0 auto;">
-                                <i class="fas fa-trash"></i> Remove Image
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="address">Location Information <span class="required">*</span></label>
-                        <input type="text" id="address" name="address" class="input-field" placeholder="Enter address or location details" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="description">Description <span class="optional">(optional)</span></label>
-                        <textarea id="description" name="description" class="input-field" rows="3" placeholder="Please provide additional details about the issue"></textarea>
-                    </div>
-
-                    <button type="button" id="submitBtn" class="btn">
-                        <i class="fas fa-paper-plane"></i> Submit Issue
-                    </button>
-                </form>
+            <div class="nav-items">
+                <div class="nav-item active" data-target="report-section">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span class="nav-text">Report Problem</span>
+                </div>
+                <div class="nav-item" data-target="track-section">
+                    <i class="fas fa-search"></i>
+                    <span class="nav-text">Track Progress</span>
+                </div>
             </div>
-
-            <a href="{{ url_for('home') }}" class="back-btn">
-                <i class="fas fa-arrow-left"></i> Back to Home
-            </a>
         </div>
 
-        <footer>
-            <p>Civic Lens &copy; 2023. Building stronger communities together.</p>
-        </footer>
+        <div class="main-content">
+            <header>
+                <h2 id="section-title">Report a Problem</h2>
+                <p class="subtitle" id="section-subtitle">Help us improve our community by reporting issues</p>
+            </header>
+
+            <div class="content">
+                <!-- Report Problem Section -->
+                <div id="report-section" class="active-section">
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i> Your reports help us improve our community. Please provide accurate information.
+                    </div>
+
+                    <div class="form-container">
+                        <form id="issueForm" method="POST" action="{{ url_for('citizen') }}" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="image">Upload Image of Issue <span class="required">*</span></label>
+                                <div class="file-input-container">
+                                    <label class="file-input-label">
+                                        <i class="fas fa-upload"></i> Choose Image File
+                                        <input type="file" id="image" name="image" class="file-input" accept="image/*" required>
+                                    </label>
+                                </div>
+                                <div class="file-name" id="file-name">No file chosen</div>
+
+                                <!-- Image Preview -->
+                                <div class="image-preview-container" id="imagePreviewContainer">
+                                    <img id="imagePreview" class="image-preview" src="" alt="Image Preview">
+                                    <button type="button" id="removeImageBtn" class="btn" style="background: #e53e3e; max-width: 200px; margin: 0 auto;">
+                                        <i class="fas fa-trash"></i> Remove Image
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="address">Location Information <span class="required">*</span></label>
+                                <input type="text" id="address" name="address" class="input-field" placeholder="Enter address or location details" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Your Email <span class="required">*</span></label>
+                                <input type="email" id="email" name="email" class="input-field" placeholder="Enter your email for updates" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description">Description <span class="optional">(optional)</span></label>
+                                <textarea id="description" name="description" class="input-field" rows="3" placeholder="Please provide additional details about the issue"></textarea>
+                            </div>
+
+                            <button type="button" id="submitBtn" class="btn">
+                                <i class="fas fa-paper-plane"></i> Submit Issue
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Track Progress Section -->
+                <div id="track-section" class="track-section">
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i> Track the status of your previously reported issues using your tracking ID.
+                    </div>
+
+                    <div class="track-form">
+                        <form id="trackForm" method="POST" action="{{ url_for('track_issue') }}">
+                            <div class="form-group">
+                                <label for="tracking-id">Tracking ID <span class="required">*</span></label>
+                                <input type="text" id="tracking-id" name="tracking_id" class="input-field" placeholder="Enter your issue tracking ID" required>
+                            </div>
+
+                            <button type="submit" class="btn">
+                                <i class="fas fa-search"></i> Track Issue
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- This section would be populated by the backend -->
+                    <div class="track-results" style="display: none;">
+                        <h3 style="margin-bottom: 15px;">Issue Status</h3>
+                        <div style="background: #f9fafb; padding: 20px; border-radius: 8px;">
+                            <p><strong>Issue:</strong> Pothole on Main Street</p>
+                            <p><strong>Status:</strong> <span style="color: #38b2ac;">In Progress</span></p>
+                            <p><strong>Reported on:</strong> September 15, 2023</p>
+                            <p><strong>Estimated resolution:</strong> September 30, 2023</p>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="{{ url_for('home') }}" class="back-btn">
+                    <i class="fas fa-arrow-left"></i> Back to Home
+                </a>
+            </div>
+
+            <footer>
+                <p>Civic Lens &copy; 2023. Building stronger communities together.</p>
+            </footer>
+        </div>
     </div>
 
     <!-- Confirmation Modal -->
@@ -380,11 +545,7 @@
                 <i class="fas fa-check-circle"></i>
             </div>
             <h3 class="modal-title">Confirm Submission</h3>
-            <p class="modal-message">Are you sure you want to submit this issue to the following department?</p>
-
-            <div class="department-badge" id="departmentClassification">
-               One step closer to confirm your issue
-            </div>
+            <p class="modal-message">Please review your information before submitting. You'll receive a confirmation email with a tracking ID.</p>
 
             <div class="modal-buttons">
                 <button class="modal-btn confirm" id="confirmSubmit">Yes, Submit</button>
@@ -394,6 +555,33 @@
     </div>
 
     <script>
+        // Navigation between sections
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Update active nav item
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Show the selected section
+                const targetId = this.getAttribute('data-target');
+                document.querySelectorAll('.active-section, .track-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.getElementById(targetId).style.display = 'block';
+
+                // Update header text
+                if (targetId === 'report-section') {
+                    document.getElementById('section-title').textContent = 'Report a Problem';
+                    document.getElementById('section-subtitle').textContent = 'Help us improve our community by reporting issues';
+                } else {
+                    document.getElementById('section-title').textContent = 'Track Progress';
+                    document.getElementById('section-subtitle').textContent = 'Check the status of your reported issues';
+                }
+            });
+        });
+
         // Show selected file name and preview
         document.getElementById('image').addEventListener('change', function(e) {
             const file = e.target.files[0];
@@ -424,6 +612,7 @@
         document.getElementById('submitBtn').addEventListener('click', function() {
             const fileInput = document.getElementById('image');
             const addressInput = document.getElementById('address');
+            const emailInput = document.getElementById('email');
 
             if (!fileInput.value) {
                 alert('Please select an image to upload.');
@@ -437,11 +626,14 @@
                 return;
             }
 
+            if (!emailInput.value.trim()) {
+                alert('Please provide your email address.');
+                emailInput.focus();
+                return;
+            }
+
             // Show the confirmation modal
             document.getElementById('confirmationModal').style.display = 'flex';
-
-            // Since issue type is removed, we'll use a default department
-            document.getElementById('departmentClassification').textContent = "Public Works";
         });
 
         // Confirm submission → submit form to backend

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resolve Issue - Civic Lens</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2a5c5c 0%, #1e3a3a 100%);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .form-container {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .radio-group {
+            margin-bottom: 15px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .radio-option:hover {
+            border-color: #2a5c5c;
+            background-color: #f0f9f9;
+        }
+
+        .radio-option input {
+            margin-right: 10px;
+        }
+
+        .extra-days {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #edf2f7;
+            border-radius: 8px;
+            border-left: 4px solid #2a5c5c;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #2a5c5c;
+            box-shadow: 0 0 0 3px rgba(42, 92, 92, 0.1);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(90deg, #2a5c5c, #1e3a3a);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(42, 92, 92, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(42, 92, 92, 0.3);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .back-btn:hover {
+            background-color: #e5e7eb;
+            transform: translateY(-1px);
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 0.9rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .error-message {
+            color: #e53e3e;
+            padding: 10px;
+            background: #fed7d7;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Resolve Issue</h1>
+            <p class="subtitle">Issue #{{ issue_uid }}</p>
+        </header>
+
+        <div class="content">
+            <div class="form-container">
+                <div id="errorMessage" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+                </div>
+
+                <form method="POST" id="resolveForm">
+                    <div class="form-group">
+                        <label>Has this issue been completely resolved?</label>
+
+                        <div class="radio-group">
+                            <label class="radio-option">
+                                <input type="radio" name="resolution" value="resolved" required>
+                                <span>Yes, the issue has been resolved</span>
+                            </label>
+
+                            <label class="radio-option">
+                                <input type="radio" name="resolution" value="extend" required>
+                                <span>No, we need more time</span>
+                            </label>
+                        </div>
+
+                        <div id="extraDaysSection" class="extra-days">
+                            <label for="extra_days">How many additional days do you need?</label>
+                            <input type="number" id="extra_days" name="extra_days" class="input-field" min="1" placeholder="Enter number of days">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">
+                        <i class="fas fa-check-circle"></i> Submit Resolution
+                    </button>
+                </form>
+            </div>
+
+            <a href="{{ url_for('department_portal', dept_id=dept_id) }}" class="back-btn">
+                <i class="fas fa-arrow-left"></i> Back to Department Portal
+            </a>
+        </div>
+
+        <footer>
+            <p>Civic Lens &copy; 2023. Building stronger communities together.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.querySelectorAll('input[name="resolution"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const extraDaysSection = document.getElementById('extraDaysSection');
+                if (this.value === 'extend') {
+                    extraDaysSection.style.display = 'block';
+                    document.getElementById('extra_days').setAttribute('required', 'required');
+                } else {
+                    extraDaysSection.style.display = 'none';
+                    document.getElementById('extra_days').removeAttribute('required');
+                }
+            });
+        });
+
+        document.getElementById('resolveForm').addEventListener('submit', function(e) {
+            const resolution = document.querySelector('input[name="resolution"]:checked');
+            const extraDays = document.getElementById('extra_days');
+            const errorMessage = document.getElementById('errorMessage');
+            const errorText = document.getElementById('errorText');
+
+            // Reset error message
+            errorMessage.style.display = 'none';
+
+            if (!resolution) {
+                e.preventDefault();
+                errorText.textContent = 'Please select a resolution option';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
+            if (resolution.value === 'extend' && (!extraDays.value || parseInt(extraDays.value) <= 0)) {
+                e.preventDefault();
+                errorText.textContent = 'Please enter a valid number of additional days';
+                errorMessage.style.display = 'block';
+                return;
+            }
+        });
+    </script>
+</body>
+</html>

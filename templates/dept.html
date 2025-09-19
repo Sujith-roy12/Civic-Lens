@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ dept_name }} - Portal</title>
     <style>
-        /* --- KEEP ALL YOUR EXISTING STYLES AS IS --- */
         :root {
             --teal-primary: #008080;
             --teal-light: #4fb9b9;
@@ -16,6 +15,9 @@
             --text-dark: #333333;
             --text-light: #ffffff;
             --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --progress-color: #38b2ac;
+            --pending-color: #ecc94b;
+            --resolved-color: #48bb78;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9; color: var(--text-dark); line-height: 1.6; padding: 20px; }
@@ -46,20 +48,33 @@
         .status-select:focus { outline: none; border-color: var(--teal-light); }
         .issue-img { width: 80px; height: 60px; object-fit: cover; border-radius: 4px; cursor: pointer; transition: transform 0.2s; }
         .issue-img:hover { transform: scale(1.05); }
-        .resolved-badge { display: inline-block; padding: 5px 10px; background-color: var(--teal-light); color: white; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        .pending-badge { display: inline-block; padding: 5px 10px; background-color: var(--gray-dark); color: white; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .resolved-badge { display: inline-block; padding: 5px 10px; background-color: var(--resolved-color); color: white; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .pending-badge { display: inline-block; padding: 5px 10px; background-color: var(--pending-color); color: white; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        .progress-badge { display: inline-block; padding: 5px 10px; background-color: var(--progress-color); color: white; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .actions { display: flex; gap: 10px; margin-top: 20px; }
         .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; transition: background-color 0.2s; }
         .btn-primary { background-color: var(--teal-primary); color: white; }
         .btn-primary:hover { background-color: var(--teal-dark); }
         .btn-secondary { background-color: var(--gray-medium); color: var(--text-dark); }
         .btn-secondary:hover { background-color: var(--gray-dark); color: white; }
+        .btn-success { background-color: var(--resolved-color); color: white; }
+        .btn-info { background-color: var(--progress-color); color: white; }
         .notification { position: fixed; top: 20px; right: 20px; padding: 15px 20px; border-radius: 4px; background-color: var(--teal-primary); color: white; box-shadow: var(--shadow); opacity: 0; transform: translateY(-20px); transition: opacity 0.3s, transform 0.3s; z-index: 1000; }
         .notification.show { opacity: 1; transform: translateY(0); }
         .image-modal { display: none; position: fixed; z-index: 1000; padding-top: 60px; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); }
         .modal-content { display: block; margin: 0 auto; max-width: 80%; max-height: 80%; }
         .close-modal { position: absolute; top: 15px; right: 35px; color: #f1f1f1; font-size: 40px; font-weight: bold; cursor: pointer; }
         .no-issues { text-align: center; padding: 30px; color: #6c757d; font-style: italic; }
+
+        /* Modal styles for day updates */
+        .day-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .day-modal-content { background-color: white; margin: 10% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 600px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .day-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .day-modal-close { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .day-modal-close:hover { color: black; }
+        .day-modal-form textarea { width: 100%; height: 150px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; }
+        .day-modal-form button { margin-top: 15px; }
+
         @media (max-width: 900px) { .dashboard { grid-template-columns: 1fr; } .sidebar { order: 2; } .main-content { order: 1; } }
         @media (max-width: 600px) { .issues-header { flex-direction: column; align-items: flex-start; gap: 10px; } .search-box { width: 100%; } table { display: block; overflow-x: auto; } }
     </style>
@@ -76,15 +91,19 @@
                     <h3>Department Stats</h3>
                     <div class="stat-item">
                         <span>Total Issues:</span>
-                        <span class="stat-value">{{ issues|length if issues else 0 }}</span>
+                        <span class="stat-value">{{ issues|length }}</span>
                     </div>
                     <div class="stat-item">
                         <span>Resolved:</span>
-                        <span class="stat-value">{{ resolved_count if resolved_count else 0 }}</span>
+                        <span class="stat-value">{{ resolved_count }}</span>
                     </div>
                     <div class="stat-item">
                         <span>Pending:</span>
-                        <span class="stat-value">{{ pending_count if pending_count else 0 }}</span>
+                        <span class="stat-value">{{ pending_count }}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>In Progress:</span>
+                        <span class="stat-value">{{ in_progress_count }}</span>
                     </div>
                 </div>
 
@@ -95,6 +114,7 @@
                         <select id="status-filter">
                             <option value="all">All Issues</option>
                             <option value="pending">Pending Only</option>
+                            <option value="in_progress">In Progress Only</option>
                             <option value="resolved">Resolved Only</option>
                         </select>
                     </div>
@@ -103,52 +123,68 @@
 
             <div class="main-content">
                 <div class="issues-header">
-                    <h2>Current Issues ({{ issues|length if issues else 0 }})</h2>
+                    <h2>Current Issues ({{ issues|length }})</h2>
                 </div>
 
                 {% if issues %}
                 <table>
                     <thead>
                         <tr>
-                            <th>Dept Issue ID</th>
+                            <th>Issue ID</th>
                             <th>Image</th>
                             <th>Address</th>
                             <th>Status</th>
+                            <th>Progress</th>
                             <th>Last Update</th>
-                            <th>Update Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for issue in issues %}
-                        <tr id="issue-{{ issue[0] }}">
-                            <td>{{ issue[0] }}</td>
+                        <tr id="issue-{{ issue.id }}">
+                            <td>{{ issue.issue_uid }}</td>
                             <td>
                                 <img
-                                    src="{{ url_for('static', filename='uploads/' ~ issue[2]) }}"
+                                    src="{{ url_for('static', filename='uploads/' ~ issue.image) }}"
                                     class="issue-img"
                                     onclick="openModal(this.src)"
                                     alt="Issue image"
                                 >
                             </td>
-                            <td>{{ issue[3] }}</td>
+                            <td>{{ issue.address }}</td>
                             <td>
-                                {% if issue[4] == 'Resolved' %}
+                                {% if issue.status == 'Resolved' %}
                                 <span class="resolved-badge">Resolved</span>
-                                {% else %}
+                                {% elif issue.status == 'Pending' %}
                                 <span class="pending-badge">Pending</span>
+                                {% else %}
+                                <span class="progress-badge">In Progress</span>
                                 {% endif %}
                             </td>
-                            <td>{{ issue[5] }}</td>
                             <td>
-                                <select
-                                    class="status-select"
-                                    data-original-value="{{ issue[4] }}"
-                                    onchange="updateStatus({{ issue[0] }}, this)"
-                                >
-                                    <option value="">--Select--</option>
-                                    <option value="Resolved" {{ 'selected' if issue[4] == 'Resolved' }}>Resolved</option>
-                                    <option value="Pending" {{ 'selected' if issue[4] == 'Pending' }}>Pending</option>
-                                </select>
+                                {% if issue.total_days %}
+                                    Day {{ issue.current_day if issue.current_day else 0 }}/{{ issue.total_days }}
+                                {% else %}
+                                    Not started
+                                {% endif %}
+                            </td>
+                            <td>{{ issue.last_update }}</td>
+                            <td>
+                                {% if issue.needs_days %}
+                                    <button class="btn btn-info" onclick="openSetDaysModal({{ issue.id }})">
+                                        Set Days
+                                    </button>
+                                {% elif issue.can_update %}
+                                    <button class="btn btn-primary" onclick="openDayUpdateModal({{ issue.id }}, {{ issue.current_day + 1 }})">
+                                        Update Day {{ issue.current_day + 1 }}
+                                    </button>
+                                {% elif issue.status == 'In Progress' and issue.current_day == issue.total_days %}
+                                    <button class="btn btn-success" onclick="resolveIssue({{ dept_id }}, {{ issue.id }})">
+                                        Resolve Issue
+                                    </button>
+                                {% else %}
+                                    <span class="pending-badge">Update pending</span>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -175,97 +211,185 @@
         <img class="modal-content" id="modalImage">
     </div>
 
+    <!-- Set Days Modal -->
+    <div id="setDaysModal" class="day-modal">
+        <div class="day-modal-content">
+            <div class="day-modal-header">
+                <h3>Set Estimated Resolution Days</h3>
+                <span class="day-modal-close" onclick="closeSetDaysModal()">&times;</span>
+            </div>
+            <form id="setDaysForm" class="day-modal-form">
+                <input type="hidden" id="setDaysIssueId" name="issue_id">
+                <div class="form-group">
+                    <label for="total_days">How many days do you estimate for resolution?</label>
+                    <input type="number" id="total_days" name="total_days" class="input-field" min="1" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Set Timeline</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Day Update Modal -->
+    <div id="dayUpdateModal" class="day-modal">
+        <div class="day-modal-content">
+            <div class="day-modal-header">
+                <h3 id="dayUpdateTitle">Update Day Progress</h3>
+                <span class="day-modal-close" onclick="closeDayUpdateModal()">&times;</span>
+            </div>
+            <form id="dayUpdateForm" class="day-modal-form">
+                <input type="hidden" id="dayUpdateIssueId" name="issue_id">
+                <input type="hidden" id="dayNumber" name="day_number">
+                <div class="form-group">
+                    <label for="description">What was accomplished on this day?</label>
+                    <textarea id="description" name="description" class="input-field" required placeholder="Describe the work done on this day..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Update</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Notification -->
     <div id="notification" class="notification"></div>
 
     <script>
+        let currentDeptId = {{ dept_id }};
+
         function openModal(src) {
             document.getElementById('modalImage').src = src;
             document.getElementById('imageModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
+
         function closeModal() {
             document.getElementById('imageModal').style.display = 'none';
             document.body.style.overflow = 'auto';
         }
-        window.onclick = function(event) {
-            const modal = document.getElementById('imageModal');
-            if (event.target === modal) closeModal();
-        };
+
+        function openSetDaysModal(issueId) {
+            document.getElementById('setDaysIssueId').value = issueId;
+            document.getElementById('setDaysModal').style.display = 'block';
+        }
+
+        function closeSetDaysModal() {
+            document.getElementById('setDaysModal').style.display = 'none';
+        }
+
+        function openDayUpdateModal(issueId, dayNumber) {
+            document.getElementById('dayUpdateIssueId').value = issueId;
+            document.getElementById('dayNumber').value = dayNumber;
+            document.getElementById('dayUpdateTitle').textContent = `Update Day ${dayNumber} Progress`;
+            document.getElementById('description').value = '';
+            document.getElementById('dayUpdateModal').style.display = 'block';
+        }
+
+        function closeDayUpdateModal() {
+            document.getElementById('dayUpdateModal').style.display = 'none';
+        }
+
+        function resolveIssue(deptId, issueId) {
+            window.location.href = `/department/${deptId}/resolve/${issueId}`;
+        }
 
         function showNotification(message) {
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = 'notification show';
-            setTimeout(() => notification.style.opacity = '0', 3000);
+            setTimeout(() => {
+                notification.className = 'notification';
+            }, 3000);
         }
 
-        async function updateStatus(issueId, selectElem) {
-            const status = selectElem.value;
-            if (!status) return;
+        // Set Days Form Submission
+        document.getElementById('setDaysForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const issueId = document.getElementById('setDaysIssueId').value;
+            const totalDays = document.getElementById('total_days').value;
 
             try {
                 const formData = new FormData();
-                formData.append('issue_id', issueId);
-                formData.append('status', status);
+                formData.append('total_days', totalDays);
 
-                const response = await fetch(window.location.pathname, {
+                const response = await fetch(`/department/${currentDeptId}/set_days/${issueId}`, {
                     method: 'POST',
                     body: formData
                 });
 
                 if (response.ok) {
-                    showNotification('Status updated successfully!');
-
-                    const statusCell = selectElem.closest('tr').querySelector('td:nth-child(4)');
-                    if (status === 'Resolved') {
-                        statusCell.innerHTML = '<span class="resolved-badge">Resolved</span>';
-                        setTimeout(() => {
-                            const row = document.getElementById('issue-' + issueId);
-                            if (row) { row.style.transition='opacity 0.5s'; row.style.opacity='0';
-                                setTimeout(() => { row.remove(); updateStats(); }, 500);
-                            }
-                        }, 1500);
-                    } else {
-                        statusCell.innerHTML = '<span class="pending-badge">Pending</span>';
-                    }
-                } else throw new Error('Failed to update status');
+                    showNotification('Timeline set successfully!');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    throw new Error('Failed to set timeline');
+                }
             } catch (error) {
                 console.error(error);
-                showNotification('Failed to update status. Try again.');
-                selectElem.value = selectElem.getAttribute('data-original-value');
+                showNotification('Failed to set timeline. Try again.');
             }
-        }
+        });
 
-        function updateStats() {
-            const rows = document.querySelectorAll('tbody tr');
-            const totalIssues = rows.length;
-            const resolvedCount = document.querySelectorAll('.resolved-badge').length;
-            const pendingCount = document.querySelectorAll('.pending-badge').length;
+        // Day Update Form Submission
+        document.getElementById('dayUpdateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const issueId = document.getElementById('dayUpdateIssueId').value;
+            const dayNumber = document.getElementById('dayNumber').value;
+            const description = document.getElementById('description').value;
 
-            document.querySelector('.issues-header h2').textContent = `Current Issues (${totalIssues})`;
-            const statValues = document.querySelectorAll('.stat-item .stat-value');
-            statValues[0].textContent = totalIssues;
-            statValues[1].textContent = resolvedCount;
-            statValues[2].textContent = pendingCount;
+            try {
+                const formData = new FormData();
+                formData.append('day_number', dayNumber);
+                formData.append('description', description);
 
-            if (totalIssues === 0) {
-                document.querySelector('tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--gray-dark);">All issues have been resolved!</td></tr>';
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const selects = document.querySelectorAll('.status-select');
-            selects.forEach(s => s.setAttribute('data-original-value', s.value));
-
-            document.getElementById('status-filter').addEventListener('change', function() {
-                const status = this.value;
-                const rows = document.querySelectorAll('tbody tr');
-                rows.forEach(row => {
-                    if (status === 'all') row.style.display = '';
-                    else if (status === 'pending') row.style.display = row.querySelector('.pending-badge') ? '' : 'none';
-                    else if (status === 'resolved') row.style.display = row.querySelector('.resolved-badge') ? '' : 'none';
+                const response = await fetch(`/department/${currentDeptId}/update_day/${issueId}`, {
+                    method: 'POST',
+                    body: formData
                 });
+
+                if (response.ok) {
+                    showNotification('Day progress updated successfully!');
+                    setTimeout(() => window.location.reload(), 1000);
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Failed to update progress');
+                }
+            } catch (error) {
+                console.error(error);
+                showNotification(error.message || 'Failed to update progress. Try again.');
+            }
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const imageModal = document.getElementById('imageModal');
+            if (event.target === imageModal) closeModal();
+
+            const setDaysModal = document.getElementById('setDaysModal');
+            if (event.target === setDaysModal) closeSetDaysModal();
+
+            const dayUpdateModal = document.getElementById('dayUpdateModal');
+            if (event.target === dayUpdateModal) closeDayUpdateModal();
+        };
+
+        // Filter functionality
+        document.getElementById('status-filter').addEventListener('change', function() {
+            const status = this.value;
+            const rows = document.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                if (status === 'all') {
+                    row.style.display = '';
+                } else {
+                    const statusCell = row.querySelector('td:nth-child(4)');
+                    const statusText = statusCell.textContent.trim().toLowerCase();
+
+                    if (status === 'pending' && statusText.includes('pending')) {
+                        row.style.display = '';
+                    } else if (status === 'in_progress' && statusText.includes('progress')) {
+                        row.style.display = '';
+                    } else if (status === 'resolved' && statusText.includes('resolved')) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
             });
         });
     </script>
